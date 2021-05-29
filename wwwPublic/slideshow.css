@@ -1,0 +1,119 @@
+* {box-sizing: border-box}
+body {margin:0}
+.slide {display: none; text-align: center;}
+img {vertical-align: middle;}
+
+/* Slideshow container */
+.slideshow-container {
+  width:100%;
+  max-height: 100%;
+  position: fixed;
+  top: 0;
+}
+
+.slideFooter {
+    position: fixed;
+    background-color: rgba(32,32,32,0.5);
+    color: white;
+    text-align: center;
+    height: 5em;
+    width: 100%;
+    bottom: 0;
+}
+
+.prev, .next {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  width: auto;
+  padding: 16px;
+  margin-top: -22px;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  transition: 0.6s ease;
+  border-radius: 0 3px 3px 0;
+  user-select: none;
+  background-color: rgba(0,0,0,0.8);
+}
+
+.slideshow-img {
+    margin: auto;
+    display: block;
+}
+
+.next {
+  right: 0;
+  border-radius: 3px 0 0 3px;
+}
+
+.prev:hover, .next:hover {
+  background-color: rgba(0,0,0,0.8);
+}
+
+.text {
+  color: #f2f2f2;
+  font-size: 15px;
+  padding: 8px 12px;
+  position: absolute;
+  bottom: 8px;
+  width: 100%;
+  text-align: center;
+}
+
+.ownerText {
+  color: #f2f2f2;
+  background-color: rgba(0,0,0,0.8);
+  border-radius:2px;
+  font-size: 12px;
+  padding: 8px 12px;
+  position: absolute;
+  top: 0;
+}
+
+/* Fading animation */
+.fade {
+  -webkit-animation-name: fade;
+  -webkit-animation-duration: 1.5s;
+  animation-name: fade;
+  animation-duration: 1.5s;
+}
+
+.fade:not(.show) {
+    opacity: 1;
+}
+
+button {
+    cursor: pointer;
+    outline: 0;
+    color: #AAA;
+  
+}
+  
+.btn:focus {
+    outline: none;
+}
+
+.btn:hover {
+    color: white;
+}
+
+.chosen {
+  color:white;
+}
+
+
+@-webkit-keyframes fade {
+  from {opacity: 0.0} 
+  to {opacity: 1}
+}
+
+@keyframes fade {
+  from {opacity: 0.0} 
+  to {opacity: 1}
+}
+
+/* On smaller screens, decrease text size */
+@media only screen and (max-width: 300px) {
+  .prev, .next,.text {font-size: 11px}
+}
