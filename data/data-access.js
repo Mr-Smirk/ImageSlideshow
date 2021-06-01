@@ -84,9 +84,13 @@ function createDao() {
         });
     }
 
-    dao.countRating = (id, type) => {
+    countRating = (id, type) => {
         let numLikes = 0
-        fm.load(rating).data.forEach(data => {
+        let ratings = fm.load(rating);
+        if(ratings === undefined) {
+            numLikes = 0;
+        }
+        ratings.forEach(data => {
             if(data.img == id && type == 1) {
                 numLikes++;
             }
@@ -95,11 +99,11 @@ function createDao() {
     }
 
     dao.getDislikes = (id) => {
-        return this.countRating(id, -1);
+        return countRating(id, -1);
     }
 
     dao.getLikes = (id) => {
-        return this.countRating(id, 1);
+        return countRating(id, 1);
     }
 
     dao.getRate = (id, user) => {
