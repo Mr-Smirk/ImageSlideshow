@@ -108,7 +108,7 @@ function createDao() {
 
     dao.getRate = (id, user) => {
         let hasRated = 0;
-        let ratings = fm.load(rating).data;
+        let ratings = fm.load(rating).data; 
         ratings.forEach(data => {
             if(data.owner == user && data.img == id) {
                 hasRated = data.type;
