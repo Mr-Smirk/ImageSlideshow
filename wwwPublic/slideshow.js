@@ -20,6 +20,7 @@ function setup() {
         console.error(err);
     });
     console.log('Showing image for ID #' + id);
+    loadRatings(id);
 }
 
 function getImage(id, onSuccess, onError) {
@@ -42,17 +43,7 @@ function next() {
     getNext(parseQueryString(window.location.search), (data) => {
         $('#img').attr("src", "img/" + data.filename);
         window.history.replaceState("none", "WebApp", "show?id=" + data.id);
-        getRating(data.id, (data) => {
-            $('#likes').text(data.likes);
-            $('#dislikes').text(data.dislikes);
-            if(data.userRate == 1) {
-                $('#btnLike').addClass("chosen");
-            } else if(data.userRate == -1) {
-                $('btnDislike').addClass("chosen");
-            }
-        }, (err) => {
-            console.error(err);
-        });
+        loadRatings(data.id);
     },
     (err) => {
         console.error(err);
@@ -64,11 +55,29 @@ function previous() {
     getPrevious(parseQueryString(window.location.search), (data) => {
         $('#img').attr("src", "img/" + data.filename);
         window.history.replaceState("none", "WebApp", "show?id=" + data.id);
+        loadRatings(data.id);
     },
     (err) => {
         console.error(err);
     }
     );
+}
+
+function loadRatings(id) {
+    getRating(id, (data) => {
+        console.log(`Success: ${data.likes} : ${data.dislikes}`);
+        $('#likes').text(data.likes);
+        $('#dislikes').text(data.dislikes);
+        $('#likeBtn').removeClass("chosen");
+        $('#dislikeBtn').removeClass("chosen");
+        if(data.userRate == 1) {
+            $('#likeBtn').addClass("chosen");
+        } else if(data.userRate == -1) {
+            $('dislikeBtn').addClass("chosen");
+        }
+    }, (err) => {
+        console.error(err);
+    });
 }
 
 function getRating(id, onSuccess, onError) {

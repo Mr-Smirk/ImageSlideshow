@@ -8,15 +8,21 @@ function setup() {
     //dao.setupDummyData();
 }
 
+function rate(req, res) {
+    receiveData(req, res, (data) => {
+
+    });
+}
+
 function getRating(req, res) {
     let obj = {};
     let data = getDataFromUrl(req.url);
     obj.likes = dao.getLikes(data.id);
     obj.dislikes = dao.getDislikes(data.id);
-    let userID = undefined;
+    let userID = 1;
     obj.userRate = dao.getRate(data.id, userID);
-    res.write(JSON.stringify(obj));
     res.setHeader('Content-Type', 'application/json');
+    res.write(JSON.stringify(obj));
     res.statusCode = 200;
     res.end();
 }
