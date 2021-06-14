@@ -5,6 +5,11 @@ html {
 .content {
     margin-top: 3em;
 }
+
+img {
+  max-height: 100vh;
+}
+
 .loading-white {
     display: inline-block;
     width: 80px;

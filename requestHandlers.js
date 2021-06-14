@@ -1,11 +1,13 @@
+const { ESRCH } = require('constants');
 const fs = require('fs');
 const { connect } = require('http2');
 const createDao = require('./data/data-access.js');
 const dao = createDao.createDao();
+const getSession = require('./sessions.js').getSession;
 var connection;
 
 function setup() {
-    //dao.setupDummyData();
+    //dao.registerUser('user', 'password');
 }
 
 function rate(req, res) {
@@ -19,13 +21,15 @@ function getRating(req, res) {
     let data = getDataFromUrl(req.url);
     obj.likes = dao.getLikes(data.id);
     obj.dislikes = dao.getDislikes(data.id);
-    let userID = 1;
+    let userID = getSession(req, res);
+    userID = userID.user.id;
     obj.userRate = dao.getRate(data.id, userID);
     res.setHeader('Content-Type', 'application/json');
     res.write(JSON.stringify(obj));
     res.statusCode = 200;
     res.end();
 }
+
 
 function getNext(req, res) {
     let data = getDataFromUrl(req.url);
@@ -94,6 +98,23 @@ function getImg(req, res) {
     }
     res.statusCode = 400;
     res.end()
+}
+
+function rateImage(req, res) {
+    receiveData(req, res, (data) => {
+        data = JSON.parse(data);
+        if(data.img !== undefined && data.type !== undefined) {
+            if(data.type == -1 || data.type == 0 || data.type == 1) {
+                let session = getSession(req, res);
+                dao.rate(data.img, session.user.id, data.type);
+                res.statusCode = 200;
+                res.end();
+            }
+        } else {
+            res.statusCode = 400;
+            res.end();
+        }
+    });
 }
 
 async function getImageDataset(id) {
@@ -186,40 +207,73 @@ function getDataFromUrl(body) {
 }
 
 function openSlideshow(req, res) {
-    data = getDataFromUrl(req.url);
-    if (data != undefined && data.id != undefined) {
-        try {
-            let carousel = fs.readFileSync('./slideshow.html');
-            res.setHeader('Content-Type', 'text/html');
-            res.write(carousel);
-            res.statusCode = 200;
-            res.end();
-        } catch (err) {
-            console.error(err);
-            res.statusCode = 500;
+    if(getSession(req, res)) {
+        data = getDataFromUrl(req.url);
+        if (data != undefined && data.id != undefined) {
+            try {
+                let carousel = fs.readFileSync('./slideshow.html');
+                res.setHeader('Content-Type', 'text/html');
+                res.write(carousel);
+                res.statusCode = 200;
+                res.end();
+            } catch (err) {
+                console.error(err);
+                res.statusCode = 500;
+                res.end();
+            }
+        } else {
+            res.statusCode = 400;
             res.end();
         }
     } else {
-        res.statusCode = 400;
+        res.setHeader('Location', '/login.html');
+        res.statusCode = 302;
         res.end();
     }
 }
 
+function sendPreviewPage (req, res) {
+    let session = getSession(req, res);
+    if(session) {
+        let carousel = fs.readFileSync('./preview.html');
+        res.setHeader('Content-Type', 'text/html');
+        res.write(carousel);
+        res.statusCode = 200;
+        res.end();
+    } else {
+        res.setHeader('Location', '/login.html');
+        res.statusCode = 302;
+        res.end();
+    }
+}
 
-module.exports = { getRating, getNext, getFirst, getPrevious, getImg, openSlideshow, setup }
+function auth(req, res) {
+    receiveData(req, res, (data) => {
+        data = JSON.parse(data);
+        try {
+            let session = dao.authenticate(data.username, data.password);
+            if(session) {
+                res.setHeader('Content-Type', 'text/plain');
+                res.setHeader('Set-Cookie', 'session=' + session);
+                res.statusCode = 200;
+                res.end();
+            } else {
+                res.statusCode = 401;
+                res.end();
+            }
+        } catch(err) {
+            res.statusCode = 400;
+            res.end();
+        }
+    });
+}
 
-// Username: pauls
-// password: PjYH6m7vi2QS2vyg
 
-/*
+function session(req, res) {
+    res.write(JSON.stringify(getSession(req, res)));
+    res.setHeader('Content-Type', 'application/json');
+    res.statusCode = 200;
+    res.end();
+}
 
-const MongoClient = require('mongodb').MongoClient;
-const uri = "mongodb+srv://pauls:PjYH6m7vi2QS2vyg@nodejs-imageviewer.nsrmp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-client.connect(err => {
-  const collection = client.db("test").collection("devices");
-  // perform actions on the collection object
-  client.close();
-});
-
-*/
+module.exports = { rateImage, session, sendPreviewPage, auth, getRating, getNext, getFirst, getPrevious, getImg, openSlideshow, setup }

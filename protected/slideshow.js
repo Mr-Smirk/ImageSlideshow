@@ -63,6 +63,25 @@ function previous() {
     );
 }
 
+function postRating(type) {
+    let img = parseQueryString(window.location.search);
+    getRating(img, (data) => {
+        if(data.userRate === type) {
+            type = 0;
+        }
+        let obj = {};
+        obj.img = img;
+        obj.type = type;
+        call('POST', '/rate', JSON.stringify(obj), undefined,
+        (data) => {
+            loadRatings(img);
+        }, (err) => { alert(err); });
+    },
+    (err) => {
+        alert(err);
+    });
+}
+
 function loadRatings(id) {
     getRating(id, (data) => {
         console.log(`Success: ${data.likes} : ${data.dislikes}`);
@@ -73,7 +92,7 @@ function loadRatings(id) {
         if(data.userRate == 1) {
             $('#likeBtn').addClass("chosen");
         } else if(data.userRate == -1) {
-            $('dislikeBtn').addClass("chosen");
+            $('#dislikeBtn').addClass("chosen");
         }
     }, (err) => {
         console.error(err);

@@ -1,8 +1,9 @@
 const http = require('http');
 const fs = require('fs');
+const getSession = require('../sessions.js').getSession;
 const contentTypes = require('./contentTypes.json');
 
-const { sendDefaultNotFound, sendDefaultBadRequest, sendDefaultInternalServerError, sendStaticContent } = require('./default-handler.js');
+const { sendDefaultNotFound, sendDefaultBadRequest, sendDefaultUnauthorized, sendDefaultInternalServerError, sendStaticContent, sendProtectedContent } = require('./default-handler.js');
 const { Route, createRoutingTable } = require('./routing.js');
 
 const webAppCreator = {
@@ -10,6 +11,7 @@ const webAppCreator = {
         const server = http.createServer(onRequest);
         const routingTable = createRoutingTable();
         let staticPath;
+        let protectedPath;
 
         function onRequest(req, res) {
             try {
@@ -25,7 +27,11 @@ const webAppCreator = {
                 }
 
                 if (req.method.toUpperCase() === 'GET') {
-                    let filePath = getFilePath(req.url);
+                    let filePath = getFilePath(req.url, req, res);
+                    if(filePath === null) {
+                        sendDefaultUnauthorized(req, res);
+                        return;
+                    }
                     let fileExtension = getFileExtension(filePath);
                     let contentType = getContentType(fileExtension);
 
@@ -67,9 +73,27 @@ const webAppCreator = {
 
             staticPath = path;
         }
+        
+        function protected(path) {
+            if (!fs.existsSync(path))
+                throw `The following path does not exist: ${path}`;
 
-        function getFilePath(url) {
-            return staticPath + url;
+            protectedPath = path;
+        }
+
+        function getFilePath(url, req, res) {
+            if(fs.existsSync(protectedPath + url)) {
+                if(!getSession(req, res)) {
+                    if(fs.existsSync(staticPath + url)) {
+                        return staticPath + url
+                    } else {
+                        return null;
+                    }
+                }
+                return protectedPath + url;
+            } else {
+                return staticPath + url;
+            }
         }
 
         function getFileExtension(filePath) {
@@ -105,6 +129,7 @@ const webAppCreator = {
         app.post = post;
         app.start = start;
         app.static = static;
+        app.protected = protected;
 
         console.log('web app created');
         return app;

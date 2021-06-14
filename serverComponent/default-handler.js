@@ -12,6 +12,13 @@ function sendDefaultBadRequest(req, res) {
     res.end();
 }
 
+function sendDefaultUnauthorized(req, res) {
+    res.statusCode = 401;
+    res.setHeader('Content-Type', 'text/plain');
+    res.write(`insufficient permissions for ${req.url}. ${res.statusCode}`);
+    res.end();
+}
+
 function sendDefaultInternalServerError(req, res) {
     res.statusCode = 500;
     res.setHeader('Content-Type', 'text/plain');
@@ -26,4 +33,11 @@ function sendStaticContent(req, res, staticContent, contentType) {
     res.end();
 }
 
-module.exports = { sendDefaultNotFound, sendDefaultBadRequest, sendDefaultInternalServerError, sendStaticContent };
+function sendProtectedContent(req, res, staticContent, contentType) {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', contentType);
+    res.write(staticContent);
+    res.end();
+}
+
+module.exports = { sendDefaultNotFound, sendDefaultBadRequest, sendDefaultUnauthorized, sendDefaultInternalServerError, sendStaticContent, sendProtectedContent };
