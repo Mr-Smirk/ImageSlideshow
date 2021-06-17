@@ -1,9 +1,7 @@
 const handler = require('./requestHandlers.js');
 const webAppCreator = require('./serverComponent/web-app-creator.js');
-const ip = require('ip');
-//const hostname = ip.address();
-//const hostname = '192.168.180.1';
-const hostname = '172.28.12.1';
+//const hostname = '172.28.12.1';
+const hostname = '127.0.0.1';
 const port = 1235;
 
 const app = webAppCreator.create(hostname, port);
@@ -27,5 +25,5 @@ app.post('/img', handler.postImage);
 app.delete('/img', handler.deleteImg);
 app.get('/img/delete', handler.checkImg);
 
-//app.start(hostname, port);
-app.publish(port);
+app.start(hostname, port);
+//app.publish(port);
