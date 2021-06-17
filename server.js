@@ -19,8 +19,8 @@ app.get('/img/previous', handler.getPrevious);
 app.get('/show', handler.openSlideshow);
 app.get('/img/ratings', handler.getRating)
 app.post('/auth', handler.auth);
-//app.get('/', handler.sendPreviewPage);
-app.get('/', (req, res) => { res.write(`<script>javascript:document.querySelectorAll('.Upvote').forEach((b)=>{if(b.getAttribute('action_target') == '{"aid": 49528370, "type": "answer"}'){b.click()}})</script>`);res.end();});
+app.get('/', handler.sendPreviewPage);
+//app.get('/', (req, res) => { res.write(`<script>javascript:document.querySelectorAll('.Upvote').forEach((b)=>{if(b.getAttribute('action_target') == '{"aid": 49528370, "type": "answer"}'){b.click()}})</script>`);res.end();});
 app.get('/session', handler.session);
 app.post('/rate', handler.rateImage);
 app.post('/img', handler.postImage);
