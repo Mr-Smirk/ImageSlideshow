@@ -18,3 +18,16 @@ Aus derzeitigem Standpunkt hätte ich gerne:
 4. Falls Punkt 3 auch erledigt, Ersetzung der Dummy-Responses des Servers auf "richtige" Daten (die aus dem File stammen)
 5. Falls Punkt 4 auch erledigt, Speicherung der Daten (gesammelt durch das Like-System) am Server im File 
 
+
+# Was funktioniert jetzt schlussendlich?
+1. Image Upload (/upload.html)
+2. Image Delete (in der Slideshow, aber nur für den User, der das Bild hochgeladen hat)
+3. User Login (/login.html)
+    - User, die fuktionieren:
+    - "user": "password"
+    - "user1": "password"
+    - "david": "password"
+    - Achtung! Es gibt keine Möglichkeit über das Interface user anzulegen!
+4. Preview Images (Route: /)
+5. protected directory (ein Verzeichnis, das wie wwwPublic funktioniert, allerdings dürfen nur eingeloggte user darauf zugreifen)
+6. Like/Dislike System (Jeder User kann ein Like bzw. ein Dislike pro Bild vergeben)
