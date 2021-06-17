@@ -67,6 +67,10 @@ const webAppCreator = {
             routingTable.register(new Route('POST', relativeUrl, reqHandler));
         }
 
+        function _delete(relativeUrl, reqHandler) {
+            routingTable.register(new Route('DELETE', relativeUrl, reqHandler));
+        }
+
         function static(path) {
             if (!fs.existsSync(path))
                 throw `The following path does not exist: ${path}`;
@@ -103,7 +107,6 @@ const webAppCreator = {
 
             var parts = filePath.split('.');
             return parts[parts.length - 1];
-
         }
 
         function getContentType(fileExtension) {
@@ -124,12 +127,20 @@ const webAppCreator = {
             return fs.readFileSync(filePath);
         }
 
+        function publish(port) {
+            server.listen(port, () => {
+                console.log(`WebApp running on port: ${port}`);
+            })
+        }
+
         let app = {};
         app.get = get;
         app.post = post;
+        app.delete = _delete;
         app.start = start;
         app.static = static;
         app.protected = protected;
+        app.publish = publish;
 
         console.log('web app created');
         return app;

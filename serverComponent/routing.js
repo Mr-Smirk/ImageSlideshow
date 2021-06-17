@@ -1,5 +1,5 @@
 function Route(method, url, handler) {
-    if (!method || typeof (method) != 'string' || !['GET', 'POST'].includes(method.toLocaleUpperCase()))
+    if (!method || typeof (method) != 'string' || !['GET', 'POST', 'DELETE'].includes(method.toLocaleUpperCase()))
         throw `can not create route. value of method parameter not acceptable: ${method}`;
 
     if (!url || typeof (url) != 'string' || !url.startsWith('/'))

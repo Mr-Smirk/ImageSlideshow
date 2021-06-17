@@ -1,13 +1,14 @@
-const { ESRCH } = require('constants');
+
 const fs = require('fs');
-const { connect } = require('http2');
 const createDao = require('./data/data-access.js');
 const dao = createDao.createDao();
+var formidable = require('formidable');
+const { Image } = require('image-js');
 const getSession = require('./sessions.js').getSession;
 var connection;
 
 function setup() {
-    //dao.registerUser('user', 'password');
+    //dao.registerUser('david', 'password');
 }
 
 function rate(req, res) {
@@ -276,4 +277,73 @@ function session(req, res) {
     res.end();
 }
 
-module.exports = { rateImage, session, sendPreviewPage, auth, getRating, getNext, getFirst, getPrevious, getImg, openSlideshow, setup }
+async function postImage(req, res) {
+    try {
+        var form = new formidable.IncomingForm();
+        form.parse(req, function (err, fields, files) {
+            var oldpath = files.img.path;
+            var ext = getFileExtension(files.img.name);
+            if(ext != 'png' && ext != 'jpg' && ext != 'jpeg') {
+                res.statusCode = 400;
+                res.end();
+            } else {
+                let img = dao.generateImage(getSession(req, res).user.id, ext).id;
+                var newpath = 'protected/img/img' + img + '.' + ext;
+                fs.copyFile(oldpath, newpath, function (err) {
+                    if (err) throw err;
+                });
+    
+                Image.load(oldpath)
+                .then((image) => {
+                    image = image.resize({ width: 320, height: 180 });
+                    image.save('protected/preview/img' + img + '.' + ext).then(() => {
+                        res.statusCode = 302;
+                        res.writeHead(302, {Location: '/'});
+                        res.write('File uploaded');
+                        res.end();
+                    });
+                });
+            }
+        });
+
+    } catch(err) {
+        res.statusCode = 400;
+        res.end();
+    }
+}
+
+function deleteImg(req, res) {
+    let data = getDataFromUrl(req.url).id;
+    let session = getSession(req, res);
+    if(dao.tryDeleteImg(data, session.user.id)) {
+        res.statusCode = 200;
+        res.end();
+    } else {
+        res.statusCode = 403;
+        res.end();
+    }
+}
+
+
+function checkImg(req, res) {
+    let data = getDataFromUrl(req.url).id;
+    let session = getSession(req, res);
+    if(dao.checkDelete(data, session.user.id)) {
+        res.statusCode = 200;
+        res.end();
+    } else {
+        res.statusCode = 403;
+        res.end();
+    }
+}
+
+function getFileExtension(filePath) {
+    if (!filePath.includes('.')) {
+        return;
+    }
+
+    var parts = filePath.split('.');
+    return parts[parts.length - 1];
+}
+
+module.exports = { checkImg, deleteImg, postImage, rateImage, session, sendPreviewPage, auth, getRating, getNext, getFirst, getPrevious, getImg, openSlideshow, setup }

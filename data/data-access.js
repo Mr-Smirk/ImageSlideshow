@@ -11,23 +11,80 @@ function createDao() {
     const user = 'data/user.json';
     const session = 'data/session.json';
 
+    dao.generateImage = (userID, type) => {
+        let obj = {};
+        obj.owner = userID;
+        let id = getId(img);
+        obj.filename = 'img' + id + '.' + type;
+        obj.id = id;
+        fm.load(img).push(obj);
+        fm.save(img);
+        return obj;
+    }
+
+    dao.tryDeleteImg = (imgId, userID) => {
+        let owner = -1;
+        fm.load(img).forEach((i) => {
+            if (i.id == imgId) {
+                if (i.owner == userID) {
+                    owner = i.owner;
+                }
+            }
+        });
+        if (owner == -1) {
+            return false;
+        }
+        let arr = fm.load(img);
+        let i;
+        for (i = 0; i < arr.length; i++) {
+            if (arr[i].id == imgId) {
+                break;
+            }
+        }
+        let obj = arr.splice(i, 1)[0];
+        try {
+            fs.unlinkSync('protected/img/' + obj.filename);
+            fs.unlinkSync('protected/preview/' + obj.filename);
+        } catch (err) {
+            console.log(err);
+        }
+        fm.save(img);
+        return true;
+    }
+
+
+    dao.checkDelete = (imgId, userID) => {
+        let owner = -1;
+        fm.load(img).forEach((i) => {
+            if (i.id == imgId) {
+                if (i.owner == userID) {
+                    owner = i.owner;
+                }
+            }
+        });
+        if (owner == -1) {
+            return false;
+        }
+        return true;
+    }
+
     dao.getNext = (id) => {
         let next;
         let dataset = fm.load(img);
         dataset.forEach(data => {
-            if(next == undefined && data.id > id) {
+            if (next == undefined && data.id > id) {
                 next = data;
-            } else if(next != undefined) {
-                if(data.id < next.id && data.id > id) {
+            } else if (next != undefined) {
+                if (data.id < next.id && data.id > id) {
                     next = data;
                 }
             }
         });
-        if(!next) {
+        if (!next) {
             next = {};
-            next.id = -2147483648; 
+            next.id = -2147483648;
             fm.load(img).forEach(data => {
-                if(data.id > next.id) {
+                if (data.id > next.id) {
                     next = data;
                 }
             });
@@ -39,19 +96,19 @@ function createDao() {
         let previous;
         let dataset = fm.load(img);
         dataset.forEach(data => {
-            if(previous == undefined && data.id < id) {
+            if (previous == undefined && data.id < id) {
                 previous = data;
-            } else if(previous != undefined) {
-                if(data.id > previous.id && data.id < id) {
+            } else if (previous != undefined) {
+                if (data.id > previous.id && data.id < id) {
                     previous = data;
                 }
             }
         });
-        if(!previous) {
+        if (!previous) {
             previous = {};
             previous.id = 2147483647;
             fm.load(img).forEach(data => {
-                if(data.id < previous.id) {
+                if (data.id < previous.id) {
                     previous = data;
                 }
             });
@@ -65,7 +122,7 @@ function createDao() {
 
     dao.getWithId = (id) => {
         return fm.load(img).find(d => {
-            if(d.id == id) {
+            if (d.id == id) {
                 return true;
             }
             return false;
@@ -73,12 +130,12 @@ function createDao() {
     }
 
     dao.rate = (img, user, type) => {
-        if(type === 1 || type === 0 || type === -1) {
+        if (type === 1 || type === 0 || type === -1) {
             let data = fm.load(rating);
             let currentRating = getRating(getLikeId(img, user));
 
-            if(currentRating !== undefined) {
-                if(currentRating.type === type) {
+            if (currentRating !== undefined) {
+                if (currentRating.type === type) {
                     type = 0;
                 }
                 deleteRating(currentRating.id);
@@ -98,7 +155,7 @@ function createDao() {
     function getRating(id) {
         let found = undefined;
         fm.load(rating).forEach((element) => {
-            if(element.id === id) {
+            if (element.id === id) {
                 found = element;
             }
         });
@@ -106,7 +163,7 @@ function createDao() {
     }
 
     dao.registerUser = (username, password) => {
-        if(!existUser(username)) {
+        if (!existUser(username)) {
             let hash = bcrypt.hashSync(password, 10);
             let u = {};
             u.id = getId(user);
@@ -122,9 +179,9 @@ function createDao() {
 
     function existUser(username) {
         let users = fm.load(user);
-        if(users !== undefined) {
+        if (users !== undefined) {
             users.forEach(user => {
-                if(user.username == username) {
+                if (user.username == username) {
                     return true;
                 }
             });
@@ -136,9 +193,9 @@ function createDao() {
 
         let data = fm.load(user);
         let successfull = false;
-        for(let i = 0; i < data.length; i++) {
-            if(data[i].username === username) {
-                if(bcrypt.compareSync(password, data[i].password)) {
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].username === username) {
+                if (bcrypt.compareSync(password, data[i].password)) {
                     return createSession(data[i].id);
                 }
             }
@@ -150,8 +207,8 @@ function createDao() {
         let obj = {};
         let sessions = fm.load(session);
         sessions.forEach(s => {
-            if(s.id === sessionID) {
-                if(s.expire > Date.now()) {
+            if (s.id === sessionID) {
+                if (s.expire > Date.now()) {
                     obj = {};
                     obj.user = s.user;
                     obj.id = s.id;
@@ -161,7 +218,7 @@ function createDao() {
                 }
             }
         });
-        if(obj) {
+        if (obj) {
             obj.user = dao.getWithId(obj.user);
         }
         return obj;
@@ -185,22 +242,22 @@ function createDao() {
         do {
             success = true;
             key = generate_key();
-            for(let i = 0; i < session.length; i++) {
-                if(session.id === key) {
+            for (let i = 0; i < session.length; i++) {
+                if (session.id === key) {
                     success = false;
                     break;
                 }
             }
-        } while(!success);
+        } while (!success);
         return key;
     }
 
     async function cleanup() {
-        if(lastCleanup + 3600000 < Date.now()) {
+        if (lastCleanup + 3600000 < Date.now()) {
             let sessions = fm.load(session);
 
-            for(let i = 0; i < sessions.length; i++) {
-                if(sessions[i].expire < Date.now()) {
+            for (let i = 0; i < sessions.length; i++) {
+                if (sessions[i].expire < Date.now()) {
                     sessions.splice(i, 1);
                     i--;
                 }
@@ -210,15 +267,15 @@ function createDao() {
             lastCleanup = Date.now;
         }
     }
-    
+
     function generate_key() {
         return crypto.randomBytes(16).toString('base64');
     };
 
     function getId(file) {
         let data = fm.load(file);
-        if(data !== undefined && data.length >= 1) {
-            return data[data.length-1].id+1;
+        if (data !== undefined && data.length >= 1) {
+            return data[data.length - 1].id + 1;
         }
         return 0;
     }
@@ -228,13 +285,13 @@ function createDao() {
 
         let index = -1;
 
-        for(let i = 0; i < data.length; i++) {
-            if(data[i].id === id) {
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].id === id) {
                 index = i;
             }
         }
-        
-        if(index >= 0) {
+
+        if (index >= 0) {
             data.splice(index, 1);
         }
         fm.save(rating);
@@ -243,9 +300,9 @@ function createDao() {
     function getLikeId(id, user) {
         let likeID = undefined;
         let data = fm.load(rating);
-        if(data.length >= 1) {
+        if (data.length >= 1) {
             data.forEach(entry => {
-                if(entry.img == id && entry.user == user) {
+                if (entry.img == id && entry.user == user) {
                     likeID = entry.id;
                 }
             });
@@ -256,15 +313,15 @@ function createDao() {
     countRating = (id, type) => {
         let numLikes = 0
         let data = fm.load(rating);
-        if(data != undefined) {
+        if (data != undefined) {
             data.forEach(data => {
-                if(data.img == id && type == data.type) {
+                if (data.img == id && type == data.type) {
                     numLikes++;
                 }
             });
         }
         return numLikes;
-    } 
+    }
 
     dao.getDislikes = (id) => {
         return countRating(id, -1);
@@ -277,9 +334,9 @@ function createDao() {
     dao.getRate = (id, user) => {
         let hasRated = 0;
         let data = fm.load(rating);
-        if(data !== undefined) {
+        if (data !== undefined) {
             data.forEach(data => {
-                if(data.user == user && data.img == id) {
+                if (data.user == user && data.img == id) {
                     hasRated = data.type;
                 }
             });
@@ -295,11 +352,11 @@ function createFileManager() {
     files = {};
 
     fileManager.load = (f) => {
-            if(!files[f]) {
+        if (!files[f]) {
             try {
                 fs.accessSync(f);
                 files[f] = JSON.parse(fs.readFileSync(f));
-            } catch(err) {
+            } catch (err) {
                 console.error(err);
                 return null;
             }
@@ -312,7 +369,7 @@ function createFileManager() {
         try {
             fs.accessSync(f);
             files[f] = JSON.parse(fs.readFileSync(f));
-        } catch(err) {
+        } catch (err) {
             console.error(err);
             return null;
         }
@@ -324,7 +381,7 @@ function createFileManager() {
             fs.accessSync(f);
             fs.writeFileSync(f, JSON.stringify(files[f]));
             return true;
-        } catch(err) {
+        } catch (err) {
             console.error(err);
             return false;
         }

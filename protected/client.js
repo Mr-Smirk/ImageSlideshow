@@ -11,7 +11,7 @@ $(document).ready( () => {
     getFirst((image) => {
         addImage(image);
         showImage(image);
-        loadMorePhotos(10);
+        loadMorePhotos(8);
     }, (err) => {
         console.log(err);
     });
@@ -22,7 +22,7 @@ window.onscroll = function(ev) {
         loadingMoreIsBlocked = true;
         showLoadingIcon();
         setTimeout(() => {
-            loadMorePhotos(10);
+            loadMorePhotos(8);
         }, 1000);
     }
 };

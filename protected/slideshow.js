@@ -21,6 +21,26 @@ function setup() {
     });
     console.log('Showing image for ID #' + id);
     loadRatings(id);
+    $('#deleteBtn').click(() => {
+        let id = parseQueryString(window.location.search);
+        call('DELETE', '/img?id=' + id, undefined, undefined, (data) => {
+            next();
+            previous();
+            alert('Deleted!');
+        }, (err) => {
+            alert(err);
+        });
+    });
+    checkDelete();
+}
+
+function checkDelete() {
+    let id = parseQueryString(window.location.search);
+    call('GET', '/img/delete?id=' + id, undefined, undefined, (data) => {
+        $('#deleteBtn').removeClass('disabled');
+    }, (err) => {
+        $('#deleteBtn').addClass('disabled');
+    });
 }
 
 function getImage(id, onSuccess, onError) {
@@ -44,6 +64,7 @@ function next() {
         $('#img').attr("src", "img/" + data.filename);
         window.history.replaceState("none", "WebApp", "show?id=" + data.id);
         loadRatings(data.id);
+        checkDelete();
     },
     (err) => {
         console.error(err);
@@ -56,6 +77,7 @@ function previous() {
         $('#img').attr("src", "img/" + data.filename);
         window.history.replaceState("none", "WebApp", "show?id=" + data.id);
         loadRatings(data.id);
+        checkDelete();
     },
     (err) => {
         console.error(err);
